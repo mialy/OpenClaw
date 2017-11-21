@@ -303,6 +303,7 @@ public:
     const shared_ptr<LevelMetadata> GetLevelMetadata(int levelNumber) const;
 
     void RegisterTouchRecognizers(ITouchHandler &touchHandler);
+    void HandleJoystickDeviceEvent(Uint32 type, Sint32 which);
 
 protected:
     virtual void VRegisterGameEvents() { }
@@ -320,6 +321,9 @@ protected:
 
     GameOptions m_GameOptions;
 
+    SDL_Joystick* m_Joystick;
+    Sint32 m_JoystickDeviceIndex;
+
 private:
     bool InitializeDisplay(GameOptions& gameOptions);
     bool InitializeAudio(GameOptions& gameOptions);
@@ -327,6 +331,7 @@ private:
     bool InitializeFont(GameOptions& gameOptions);
     bool InitializeLocalization(GameOptions& gameOptions);
     bool InitializeTouchManager(GameOptions& gameOptions);
+    bool InitializeControllers(GameOptions& gameOptions);
     bool InitializeEventMgr();
     bool ReadConsoleConfig();
     bool ReadActorXmlPrototypes(GameOptions& gameOptions);

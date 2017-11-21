@@ -785,6 +785,49 @@ bool ScreenElementMenuPage::VOnEvent(SDL_Event& evt)
             }
         }
     }
+    else if (evt.type == SDL_JOYAXISMOTION)
+    {
+        if (evt.jaxis.axis == 1)
+        {
+            if (evt.jaxis.value < 0)
+            {
+                MoveToMenuItemIdx(activeMenuItemIdx, -1);
+                return true;
+            }
+            else if (evt.jaxis.value > 0)
+            {
+                MoveToMenuItemIdx(activeMenuItemIdx, 1);
+                return true;
+            }
+        }
+    }
+    else if (evt.type == SDL_JOYBUTTONDOWN)
+    {
+        if (evt.jbutton.button == 0 || evt.jbutton.button == 2)
+        {
+            if (shared_ptr<ScreenElementMenuItem> pActiveMenuItem = GetActiveMenuItem())
+            {
+                if (!pActiveMenuItem->Press())
+                {
+                    LOG_WARNING("No event is assigned to button: " + pActiveMenuItem->GetName());
+                }
+                return true;
+            }
+            else
+            {
+                LOG_WARNING("Could not find any active menu item !");
+            }
+
+        }
+        else if (evt.jbutton.button == 1 || evt.jbutton.button == 3)
+        {
+            SoundInfo soundInfo(SOUND_MENU_SELECT_MENU_ITEM);
+            IEventMgr::Get()->VTriggerEvent(IEventDataPtr(
+                new EventData_Request_Play_Sound(soundInfo)));
+
+            IEventMgr::Get()->VQueueEvent(m_KeyToEventMap[SDL_SCANCODE_ESCAPE]);
+        }
+    }
 
     for (shared_ptr<ScreenElementMenuItem> pMenuItem : m_MenuItems)
     {

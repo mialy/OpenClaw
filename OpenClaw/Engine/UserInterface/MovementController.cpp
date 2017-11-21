@@ -100,3 +100,18 @@ std::vector<std::shared_ptr<AbstractRecognizer>> MovementController::VRegisterRe
 bool MovementController::VOnTouch(const Touch_Event &evt) {
     return false;
 }
+
+bool MovementController::VOnJoystickButtonDown(Uint8 button)
+{
+    return false;
+}
+
+bool MovementController::VOnJoystickButtonUp(Uint8 button)
+{
+    return false;
+}
+
+bool MovementController::VOnJoystickAxisMotion(Uint8 axis, Sint16 value)
+{
+    return false;
+}

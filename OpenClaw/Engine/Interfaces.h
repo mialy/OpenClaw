@@ -694,6 +694,14 @@ public:
     virtual bool VOnTouch(const Touch_Event &evt) = 0;
 };
 
+class IJoystickHandler
+{
+public:
+    virtual bool VOnJoystickButtonDown(Uint8 button) = 0;
+    virtual bool VOnJoystickButtonUp(Uint8 button) = 0;
+    virtual bool VOnJoystickAxisMotion(Uint8 axis, Sint16 value) = 0;
+};
+
 //-------------------------------------------------------------------------------------------------
 // Abstract generic factory
 //-------------------------------------------------------------------------------------------------

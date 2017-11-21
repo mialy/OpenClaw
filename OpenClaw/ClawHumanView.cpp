@@ -24,6 +24,7 @@ ClawHumanView::ClawHumanView(SDL_Renderer* renderer)
     m_pPointerHandler = m_pFreeCameraController;
     m_pTouchHandler = m_pFreeCameraController;
     g_pApp->RegisterTouchRecognizers(*m_pFreeCameraController);
+    m_pJoystickHandler = m_pFreeCameraController;
 }
 
 ClawHumanView::~ClawHumanView()
@@ -84,6 +85,7 @@ void ClawHumanView::VSetControlledActor(uint32 actorId)
     m_pPointerHandler = m_pActorController;
     m_pTouchHandler = m_pActorController;
     g_pApp->RegisterTouchRecognizers(*m_pActorController);
+    m_pJoystickHandler = m_pActorController;
 
     m_pCamera->SetTarget(m_pControlledActor);
 }

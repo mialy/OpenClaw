@@ -5,7 +5,7 @@
 #include "Engine/SharedDefines.h"
 
 class SceneNode;
-class ActorController : public IKeyboardHandler, public IPointerHandler, public ITouchHandler
+class ActorController : public IKeyboardHandler, public IPointerHandler, public ITouchHandler, public IJoystickHandler
 {
 public:
     ActorController(shared_ptr<SceneNode> controlledObject, float speed = 0.36f);
@@ -25,6 +25,10 @@ public:
     std::vector<std::shared_ptr<AbstractRecognizer>> VRegisterRecognizers() override;
     bool VOnTouch(const Touch_Event &evt) override;
 
+    bool VOnJoystickButtonDown(Uint8 button);
+    bool VOnJoystickButtonUp(Uint8 button);
+    bool VOnJoystickAxisMotion(Uint8 axis, Sint16 value);
+
 private:
     bool OnTap(int id, const Touch_TapEvent &evt);
     bool OnJoystick(int id, const Touch_JoystickEvent &evt);
@@ -35,6 +39,9 @@ private:
     float m_Speed;
 
     std::map<int, bool> m_InputKeys;
+
+    std::map<int, bool> m_ControllerKeys;
+    std::map<int, int> m_ControllerAxis;
 
     // SDL_Scancode array
     const uint8* m_pKeyStates;

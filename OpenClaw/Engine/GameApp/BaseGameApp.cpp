@@ -51,6 +51,9 @@ BaseGameApp::BaseGameApp()
     m_IsRunning = false;
     m_QuitRequested = false;
     m_IsQuitting = false;
+
+    m_Joystick = NULL;
+    m_JoystickDeviceIndex = -1;
 }
 
 bool BaseGameApp::Initialize(int argc, char** argv)
@@ -66,6 +69,7 @@ bool BaseGameApp::Initialize(int argc, char** argv)
     if (!InitializeResources(m_GameOptions)) return false;
     if (!InitializeLocalization(m_GameOptions)) return false;
     if (!InitializeTouchManager(m_GameOptions)) return false;
+    if (!InitializeControllers(m_GameOptions)) return false;
     if (!ReadActorXmlPrototypes(m_GameOptions)) return false;
     if (!ReadLevelMetadata(m_GameOptions)) return false;
 
@@ -100,6 +104,12 @@ void BaseGameApp::Terminate()
     LOG("Terminating...");
 
     RemoveAllDelegates();
+
+    if (m_Joystick != NULL && SDL_JoystickGetAttached(m_Joystick) == SDL_TRUE) {
+        SDL_JoystickClose(m_Joystick);
+        m_Joystick = NULL;
+        m_JoystickDeviceIndex = -1;
+    }
 
     SAFE_DELETE(m_pGame);
     SDL_DestroyRenderer(m_pRenderer);
@@ -338,6 +348,11 @@ void BaseGameApp::OnEvent(SDL_Event& event)
         case SDL_MOUSEBUTTONUP:
         case SDL_MOUSEWHEEL:
         case SDL_UserTouchEvent:
+        case SDL_JOYBUTTONDOWN:
+        case SDL_JOYBUTTONUP:
+        case SDL_JOYAXISMOTION:
+        case SDL_JOYDEVICEREMOVED:
+        case SDL_JOYDEVICEADDED:
         {
             if (m_pGame)
             {
@@ -885,6 +900,94 @@ bool BaseGameApp::InitializeTouchManager(GameOptions& gameOptions)
     }
 
     return true;
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+// BaseGameApp::InitializeControllers
+//---------------------------------------------------------------------------------------------------------------------
+bool BaseGameApp::InitializeControllers(GameOptions& gameOptions)
+{
+    if (SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER) != 0)
+    {
+        LOG_ERROR("Failed to initialize Joystick Sub System. Error: %s" + std::string(SDL_GetError()));
+        return false;
+    }
+
+    SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, ">>>>> Initializing Joysticks...");
+
+    for (int i = 0; i < SDL_NumJoysticks(); i++)
+    {
+        if ((m_Joystick = SDL_JoystickOpen(i)))
+        {
+            m_JoystickDeviceIndex = i;
+            break;
+        } else {
+            LOG_ERROR("Joysticks: Unable to use joystick! Error: " + std::string(SDL_GetError()));
+        }
+    }
+
+    if (SDL_NumJoysticks() < 1)
+    {
+        LOG("Joysticks: No Joysticks connected");
+    }
+    else
+    {
+        if (m_JoystickDeviceIndex < 0)
+        {
+            LOG_WARNING("Joysticks: Unable to connect to any of the found joysticks");
+        }
+        else
+        {
+            LOG("Joysticks: Successfully connected to joystick");
+        }
+    }
+
+    LOG("Joysticks successfully initialized...");
+    return true;
+}
+
+void BaseGameApp::HandleJoystickDeviceEvent(Uint32 type, Sint32 which)
+{
+    if (type == SDL_JOYDEVICEADDED)
+    {
+        // LOG("Joystick added: #" + ToStr(which));
+
+        if (SDL_JoystickGetAttached(m_Joystick) == SDL_FALSE)
+        {
+            if ((m_Joystick = SDL_JoystickOpen(which)))
+            {
+                // LOG("Joysticks: Successfully connected to joystick");
+                m_JoystickDeviceIndex = which;
+            }
+            else
+            {
+                // LOG_ERROR("Joysticks: Unable to use joystick! Error: " + std::string(SDL_GetError()));
+                m_JoystickDeviceIndex = -1;
+            }
+        }
+    }
+    else if (type == SDL_JOYDEVICEREMOVED)
+    {
+        // LOG("Joystick removed: #" + ToStr(which));
+
+        if (SDL_JoystickGetAttached(m_Joystick) == SDL_TRUE &&
+            m_JoystickDeviceIndex == which)
+        {
+            SDL_JoystickClose(m_Joystick);
+            m_JoystickDeviceIndex = -1;
+        }
+
+        for (int i = 0; i < SDL_NumJoysticks(); i++)
+        {
+            if ((m_Joystick = SDL_JoystickOpen(i)))
+            {
+                m_JoystickDeviceIndex = i;
+                break;
+            } else {
+                // LOG_ERROR("Joysticks: Unable to use joystick! Error: " + std::string(SDL_GetError()));
+            }
+        }
+    }
 }
 
 //---------------------------------------------------------------------------------------------------------------------

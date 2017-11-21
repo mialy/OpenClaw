@@ -157,7 +157,6 @@ bool HumanView::VOnEvent(SDL_Event& evt)
                     m_pIngameMenu->VSetVisible(true);
                     return true;
                 }
-
                 return m_pKeyboardHandler->VOnKeyDown(evt.key.keysym.sym);
             }
             break;
@@ -191,6 +190,34 @@ bool HumanView::VOnEvent(SDL_Event& evt)
         case SDL_MOUSEBUTTONUP:
         {
             return m_pPointerHandler->VOnPointerButtonUp(evt.button);
+        }
+
+        case SDL_JOYBUTTONDOWN:
+        {
+            if (evt.jbutton.button == 9 &&
+                g_pApp->GetGameLogic()->GetGameState() == GameState_IngameRunning &&
+                m_pIngameMenu &&
+                !m_pIngameMenu->VIsVisible())
+            {
+                m_pIngameMenu->VSetVisible(true);
+                return true;
+            }
+
+            return m_pJoystickHandler->VOnJoystickButtonDown(evt.jbutton.button);
+        }
+        case SDL_JOYBUTTONUP:
+        {
+            return m_pJoystickHandler->VOnJoystickButtonUp(evt.jbutton.button);
+        }
+        case SDL_JOYAXISMOTION:
+        {
+            return m_pJoystickHandler->VOnJoystickAxisMotion(evt.jaxis.axis, evt.jaxis.value);
+        }
+        case SDL_JOYDEVICEREMOVED:
+        case SDL_JOYDEVICEADDED:
+        {
+            g_pApp->HandleJoystickDeviceEvent(evt.jdevice.type, evt.jdevice.which);
+            return false;
         }
         default:
             return false;
