@@ -789,17 +789,38 @@ bool ScreenElementMenuPage::VOnEvent(SDL_Event& evt)
     {
         if (evt.jaxis.axis == 1)
         {
-            if (evt.jaxis.value < 0)
+            bool ready = !joyAxisLastChange || (SDL_GetTicks() - joyAxisLastChange > GetJoyMinTimeout());
+
+            if (ready && evt.jaxis.value < -GetJoyAxisDeadzone())
             {
                 MoveToMenuItemIdx(activeMenuItemIdx, -1);
+                joyAxisLastChange = SDL_GetTicks();
                 return true;
             }
-            else if (evt.jaxis.value > 0)
+            else if (ready && evt.jaxis.value > GetJoyAxisDeadzone())
             {
                 MoveToMenuItemIdx(activeMenuItemIdx, 1);
+                joyAxisLastChange = SDL_GetTicks();
                 return true;
             }
         }
+    }
+    else if (evt.type == SDL_JOYHATMOTION)
+    {
+        if (evt.jhat.value == SDL_HAT_UP)
+        {
+            MoveToMenuItemIdx(activeMenuItemIdx, -1);
+        }
+        else if (evt.jhat.value == SDL_HAT_DOWN)
+        {
+            MoveToMenuItemIdx(activeMenuItemIdx, 1);
+        }
+        else
+        {
+            return false;
+        }
+
+        return true;
     }
     else if (evt.type == SDL_JOYBUTTONDOWN)
     {
@@ -984,6 +1005,8 @@ void ScreenElementMenuPage::OnPageLoaded()
 {
     // Focus on first active button
     MoveToMenuItemIdx(m_MenuItems.size() - 1, 1, false);
+
+    joyAxisLastChange = 0;
 }
 
 shared_ptr<ScreenElementMenuItem> ScreenElementMenuPage::FindMenuItemByName(std::string name)

@@ -188,6 +188,9 @@ public:
 
     virtual bool VOnEvent(SDL_Event& evt);
 
+    virtual Uint32 GetJoyMinTimeout() const { return 250; };
+    virtual Sint16 GetJoyAxisDeadzone() const { return 8000; };
+
     bool Initialize(TiXmlElement* pElem);
 
     void OnPageLoaded();
@@ -207,6 +210,8 @@ private:
 
     shared_ptr<Image> m_pBackground;
     SDL_Renderer* m_pRenderer;
+
+    Uint32 joyAxisLastChange;
 };
 
 enum MenuItemType

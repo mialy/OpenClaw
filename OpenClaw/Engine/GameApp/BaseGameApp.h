@@ -322,6 +322,7 @@ protected:
     GameOptions m_GameOptions;
 
     SDL_Joystick* m_Joystick;
+    SDL_Haptic* m_JoystickHaptic;
     Sint32 m_JoystickDeviceIndex;
 
 private:

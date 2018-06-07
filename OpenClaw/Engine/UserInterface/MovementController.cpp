@@ -111,6 +111,11 @@ bool MovementController::VOnJoystickButtonUp(Uint8 button)
     return false;
 }
 
+bool MovementController::VOnJoystickHat(Uint8 hat)
+{
+    return false;
+}
+
 bool MovementController::VOnJoystickAxisMotion(Uint8 axis, Sint16 value)
 {
     return false;

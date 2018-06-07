@@ -27,13 +27,18 @@ public:
 
     bool VOnJoystickButtonDown(Uint8 button);
     bool VOnJoystickButtonUp(Uint8 button);
+    bool VOnJoystickHat(Uint8 hat);
     bool VOnJoystickAxisMotion(Uint8 axis, Sint16 value);
+
+
 
 private:
     bool OnTap(int id, const Touch_TapEvent &evt);
     bool OnJoystick(int id, const Touch_JoystickEvent &evt);
     bool OnSwipe(int id, const Touch_SwipeEvent &evt, bool start);
     bool OnPress(int id, const Touch_PressEvent &evt, bool start);
+    
+    virtual Sint16 GetJoyAxisDeadzone() const { return 8000; };
 
     shared_ptr<SceneNode> m_pControlledObject;
     float m_Speed;
@@ -42,6 +47,7 @@ private:
 
     std::map<int, bool> m_ControllerKeys;
     std::map<int, int> m_ControllerAxis;
+    Uint8 ControllerHatPos;
 
     // SDL_Scancode array
     const uint8* m_pKeyStates;

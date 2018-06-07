@@ -192,14 +192,18 @@ bool HumanView::VOnEvent(SDL_Event& evt)
             return m_pPointerHandler->VOnPointerButtonUp(evt.button);
         }
 
+        case SDL_JOYHATMOTION:
+        {
+            return m_pJoystickHandler->VOnJoystickHat(evt.jhat.value);
+        }
+
         case SDL_JOYBUTTONDOWN:
         {
-            if (evt.jbutton.button == 9 &&
+            if (evt.jbutton.button == 7 &&
                 g_pApp->GetGameLogic()->GetGameState() == GameState_IngameRunning &&
-                m_pIngameMenu &&
-                !m_pIngameMenu->VIsVisible())
-            {
-                m_pIngameMenu->VSetVisible(true);
+                m_pIngameMenu
+            ) {
+                m_pIngameMenu->VSetVisible(!m_pIngameMenu->VIsVisible());
                 return true;
             }
 

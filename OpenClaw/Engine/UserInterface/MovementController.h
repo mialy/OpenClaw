@@ -26,6 +26,7 @@ public:
 
     bool VOnJoystickButtonDown(Uint8 button);
     bool VOnJoystickButtonUp(Uint8 button);
+    bool VOnJoystickHat(Uint8 hat);
     bool VOnJoystickAxisMotion(Uint8 axis, Sint16 value);
 
 private:

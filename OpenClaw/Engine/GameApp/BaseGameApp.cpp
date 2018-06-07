@@ -105,6 +105,10 @@ void BaseGameApp::Terminate()
 
     RemoveAllDelegates();
 
+    if (m_JoystickHaptic != NULL) {
+        SDL_HapticClose(m_JoystickHaptic);
+        m_JoystickHaptic = NULL;
+    }
     if (m_Joystick != NULL && SDL_JoystickGetAttached(m_Joystick) == SDL_TRUE) {
         SDL_JoystickClose(m_Joystick);
         m_Joystick = NULL;
@@ -350,6 +354,7 @@ void BaseGameApp::OnEvent(SDL_Event& event)
         case SDL_UserTouchEvent:
         case SDL_JOYBUTTONDOWN:
         case SDL_JOYBUTTONUP:
+        case SDL_JOYHATMOTION:
         case SDL_JOYAXISMOTION:
         case SDL_JOYDEVICEREMOVED:
         case SDL_JOYDEVICEADDED:
@@ -920,6 +925,11 @@ bool BaseGameApp::InitializeControllers(GameOptions& gameOptions)
         if ((m_Joystick = SDL_JoystickOpen(i)))
         {
             m_JoystickDeviceIndex = i;
+            LOG("Joysticks: Name: " + std::string(SDL_JoystickNameForIndex(i)));
+            LOG("Joysticks: Number of Axes: " + ToStr(SDL_JoystickNumAxes(m_Joystick)));
+            LOG("Joysticks: Number of Buttons: " + ToStr(SDL_JoystickNumButtons(m_Joystick)));
+            LOG("Joysticks: Number of Balls: " + ToStr(SDL_JoystickNumBalls(m_Joystick)));
+            LOG("Joysticks: Number of Hats: " + ToStr(SDL_JoystickNumHats(m_Joystick)));
             break;
         } else {
             LOG_ERROR("Joysticks: Unable to use joystick! Error: " + std::string(SDL_GetError()));
@@ -983,8 +993,6 @@ void BaseGameApp::HandleJoystickDeviceEvent(Uint32 type, Sint32 which)
             {
                 m_JoystickDeviceIndex = i;
                 break;
-            } else {
-                // LOG_ERROR("Joysticks: Unable to use joystick! Error: " + std::string(SDL_GetError()));
             }
         }
     }

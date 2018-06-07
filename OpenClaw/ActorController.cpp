@@ -65,54 +65,54 @@ void ActorController::OnUpdate(uint32 msDiff)
 
     if (g_pApp->GetControlOptions()->useAlternateControls)
     {
-        if (m_InputKeys[SDLK_d] || m_ControllerAxis[0] > 0)
+        if (m_InputKeys[SDLK_d] || m_ControllerAxis[0] > 0 || ControllerHatPos == SDL_HAT_RIGHT)
         {
             moveX += m_Speed * (float)msDiff;
         }
-        if (m_InputKeys[SDLK_a] || m_ControllerAxis[0] < 0)
+        if (m_InputKeys[SDLK_a] || m_ControllerAxis[0] < 0 || ControllerHatPos == SDL_HAT_LEFT)
         {
             moveX -= m_Speed * (float)msDiff;
         }
 
         // CLimbing
-        if (m_InputKeys[SDLK_s] || m_ControllerAxis[1] > 0)
+        if (m_InputKeys[SDLK_s] || m_ControllerAxis[1] > 0 || ControllerHatPos == SDL_HAT_DOWN)
         {
             climbY += 5.0;
         }
-        if (m_InputKeys[SDLK_w] || m_ControllerAxis[1] < 0)
+        if (m_InputKeys[SDLK_w] || m_ControllerAxis[1] < 0 || ControllerHatPos == SDL_HAT_UP)
         {
             climbY -= 5.0;
         }
 
         // Jumping
-        if (m_InputKeys[SDLK_SPACE] || m_InputKeys[SDLK_w] || m_ControllerKeys[2])
+        if (m_InputKeys[SDLK_SPACE] || m_InputKeys[SDLK_w] || m_ControllerKeys[0])
         {
             moveY -= m_Speed * (float)msDiff;
         }
     }
     else
     {
-        if (m_InputKeys[SDLK_RIGHT] || m_ControllerAxis[0] > 0)
+        if (m_InputKeys[SDLK_RIGHT] || m_ControllerAxis[0] > 0 || ControllerHatPos == SDL_HAT_RIGHT)
         {
             moveX += m_Speed * (float)msDiff;
         }
-        if (m_InputKeys[SDLK_LEFT] || m_ControllerAxis[0] < 0)
+        if (m_InputKeys[SDLK_LEFT] || m_ControllerAxis[0] < 0 || ControllerHatPos == SDL_HAT_LEFT)
         {
             moveX -= m_Speed * (float)msDiff;
         }
 
         // CLimbing
-        if (m_InputKeys[SDLK_DOWN] || m_ControllerAxis[1] > 0)
+        if (m_InputKeys[SDLK_DOWN] || m_ControllerAxis[1] > 0 || ControllerHatPos == SDL_HAT_DOWN)
         {
             climbY += 5.0;
         }
-        if (m_InputKeys[SDLK_UP] || m_ControllerAxis[1] < 0)
+        if (m_InputKeys[SDLK_UP] || m_ControllerAxis[1] < 0 || ControllerHatPos == SDL_HAT_UP)
         {
             climbY -= 5.0;
         }
 
         // Jumping
-        if (m_InputKeys[SDLK_SPACE] || m_ControllerKeys[2])
+        if (m_InputKeys[SDLK_SPACE] || m_ControllerKeys[0])
         {
             moveY -= m_Speed * (float)msDiff;
         }
@@ -407,17 +407,17 @@ bool ActorController::VOnJoystickButtonDown(Uint8 button)
     // ToDo: Make those buttons configurable
     switch (button)
     {
-        case 0:
+        case 3:
             HandleAction(ActionType_Change_Ammo_Type);
             return true;
         case 1:
         case 5:
             HandleAction(ActionType_Fire);
             return true;
-        case 2:
+        case 0:
             // jumping
             break;
-        case 3:
+        case 2:
         case 4:
             HandleAction(ActionType_Attack);
             return true;
@@ -441,9 +441,17 @@ bool ActorController::VOnJoystickButtonUp(Uint8 button)
     return false;
 }
 
+bool ActorController::VOnJoystickHat(Uint8 button)
+{
+    ControllerHatPos = button;
+    return false;
+}
+
 bool ActorController::VOnJoystickAxisMotion(Uint8 axis, Sint16 value)
 {
-    m_ControllerAxis[axis] = value < 0 ? -1 : value > 0 ? 1 : 0;
+    m_ControllerAxis[axis] = value < -GetJoyAxisDeadzone() ? -1
+        : value > GetJoyAxisDeadzone() ? 1
+        : 0;
 
     return false;
 }

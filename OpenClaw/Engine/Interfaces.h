@@ -699,6 +699,7 @@ class IJoystickHandler
 public:
     virtual bool VOnJoystickButtonDown(Uint8 button) = 0;
     virtual bool VOnJoystickButtonUp(Uint8 button) = 0;
+    virtual bool VOnJoystickHat(Uint8 hat) = 0;
     virtual bool VOnJoystickAxisMotion(Uint8 axis, Sint16 value) = 0;
 };
 
