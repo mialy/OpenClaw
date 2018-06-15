@@ -50,6 +50,8 @@ struct GameOptions
         userDirectory = "";
 
         startupCommandsFile = "startup_commands.txt";
+
+        joystickVibration = true;
     }
 
     GameOptions()
@@ -98,6 +100,9 @@ struct GameOptions
 
     // File with prewritten commands which are executed upon startup of the game
     std::string startupCommandsFile;
+
+    // Joystick/Controller
+    bool joystickVibration;
 };
 
 // Cheats and stuff
@@ -304,6 +309,7 @@ public:
 
     void RegisterTouchRecognizers(ITouchHandler &touchHandler);
     void HandleJoystickDeviceEvent(Uint32 type, Sint32 which);
+    void JoystickRumblePlay(float strength, Uint32 length);
 
 protected:
     virtual void VRegisterGameEvents() { }

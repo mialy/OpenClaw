@@ -411,6 +411,8 @@ void ClawGameLogic::CheckpointReachedDelegate(IEventDataPtr pEventData)
             std::string savesFilePath = g_pApp->GetGameConfig()->userDirectory + g_pApp->GetGameConfig()->savesFile;
             saveGamesDoc.SaveFile(savesFilePath.c_str());
         }
+
+        g_pApp->JoystickRumblePlay(0.20, 500);
     }
 }
 

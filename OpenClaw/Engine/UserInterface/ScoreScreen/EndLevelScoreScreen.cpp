@@ -395,6 +395,11 @@ bool ScreenElementScoreScreen::VOnEvent(SDL_Event& evt)
             }
             break;
         }
+        case SDL_JOYBUTTONDOWN:
+        {
+            ForceNextState();
+            return true;
+        }
     }
 
     return false;

@@ -683,6 +683,12 @@ bool BaseGameApp::LoadGameOptions(const char* inConfigFile)
             pDebugOptionsRootElem->FirstChildElement("SkipMenuToLevel"));
     }
 
+    if (TiXmlElement* joystickRootElem = configRoot->FirstChildElement("Joystick"))
+    {
+        ParseValueFromXmlElem(&m_GameOptions.joystickVibration,
+            joystickRootElem->FirstChildElement("Vibration"));
+    }
+
     return true;
 }
 
@@ -912,7 +918,7 @@ bool BaseGameApp::InitializeTouchManager(GameOptions& gameOptions)
 //---------------------------------------------------------------------------------------------------------------------
 bool BaseGameApp::InitializeControllers(GameOptions& gameOptions)
 {
-    if (SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER) != 0)
+    if (SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC) != 0)
     {
         LOG_ERROR("Failed to initialize Joystick Sub System. Error: %s" + std::string(SDL_GetError()));
         return false;
@@ -949,6 +955,17 @@ bool BaseGameApp::InitializeControllers(GameOptions& gameOptions)
         else
         {
             LOG("Joysticks: Successfully connected to joystick");
+
+            if (m_GameOptions.joystickVibration &&
+                (m_JoystickHaptic = SDL_HapticOpenFromJoystick(m_Joystick)) != NULL &&
+                SDL_HapticRumbleInit(m_JoystickHaptic) == 0)
+            {
+                JoystickRumblePlay(0.15, 200);
+            }
+            else
+            {
+                LOG_ERROR("Joysticks: Unable to use Force Feedback! Error: " + std::string(SDL_GetError()));
+            }
         }
     }
 
@@ -960,25 +977,31 @@ void BaseGameApp::HandleJoystickDeviceEvent(Uint32 type, Sint32 which)
 {
     if (type == SDL_JOYDEVICEADDED)
     {
-        // LOG("Joystick added: #" + ToStr(which));
-
         if (SDL_JoystickGetAttached(m_Joystick) == SDL_FALSE)
         {
             if ((m_Joystick = SDL_JoystickOpen(which)))
             {
-                // LOG("Joysticks: Successfully connected to joystick");
                 m_JoystickDeviceIndex = which;
+
+                if (m_GameOptions.joystickVibration && (
+                    (m_JoystickHaptic = SDL_HapticOpenFromJoystick(m_Joystick)) == NULL ||
+                    SDL_HapticRumbleInit(m_JoystickHaptic) != 0))
+                {
+                    LOG_ERROR("Joysticks: Unable to use Force Feedback! Error: " + std::string(SDL_GetError()));
+                }
             }
             else
             {
-                // LOG_ERROR("Joysticks: Unable to use joystick! Error: " + std::string(SDL_GetError()));
                 m_JoystickDeviceIndex = -1;
             }
         }
     }
     else if (type == SDL_JOYDEVICEREMOVED)
     {
-        // LOG("Joystick removed: #" + ToStr(which));
+        if (m_JoystickHaptic != NULL) {
+            SDL_HapticClose(m_JoystickHaptic);
+            m_JoystickHaptic = NULL;
+        }
 
         if (SDL_JoystickGetAttached(m_Joystick) == SDL_TRUE &&
             m_JoystickDeviceIndex == which)
@@ -995,6 +1018,14 @@ void BaseGameApp::HandleJoystickDeviceEvent(Uint32 type, Sint32 which)
                 break;
             }
         }
+    }
+}
+
+void BaseGameApp::JoystickRumblePlay(float strength, Uint32 length)
+{
+    if (m_JoystickHaptic)
+    {
+        SDL_HapticRumblePlay(m_JoystickHaptic, strength, length);
     }
 }
 
