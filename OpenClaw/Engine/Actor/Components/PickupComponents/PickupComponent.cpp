@@ -553,7 +553,7 @@ bool EndLevelPickupComponent::VOnApply(Actor* pActorWhoPickedThis)
     IEventMgr::Get()->VTriggerEvent(IEventDataPtr(
         new EventData_Request_Play_Sound(soundInfo)));
 
-    g_pApp->JoystickRumblePlay(0.30, 600);
+    g_pApp->ControllerRumblePlay(0.30, 600);
 
     // TODO: This is hack. But it suffices.
 

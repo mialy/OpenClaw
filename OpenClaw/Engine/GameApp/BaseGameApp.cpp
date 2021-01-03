@@ -52,8 +52,8 @@ BaseGameApp::BaseGameApp()
     m_QuitRequested = false;
     m_IsQuitting = false;
 
-    m_Joystick = NULL;
-    m_JoystickDeviceIndex = -1;
+    m_Controller = NULL;
+    m_ControllerDeviceIndex = -1;
 }
 
 bool BaseGameApp::Initialize(int argc, char** argv)
@@ -105,15 +105,7 @@ void BaseGameApp::Terminate()
 
     RemoveAllDelegates();
 
-    if (m_JoystickHaptic != NULL) {
-        SDL_HapticClose(m_JoystickHaptic);
-        m_JoystickHaptic = NULL;
-    }
-    if (m_Joystick != NULL && SDL_JoystickGetAttached(m_Joystick) == SDL_TRUE) {
-        SDL_JoystickClose(m_Joystick);
-        m_Joystick = NULL;
-        m_JoystickDeviceIndex = -1;
-    }
+    ControllerDeviceDeAttach();
 
     SAFE_DELETE(m_pGame);
     SDL_DestroyRenderer(m_pRenderer);
@@ -667,6 +659,15 @@ bool BaseGameApp::LoadGameOptions(const char* inConfigFile)
     }
 
     //-------------------------------------------------------------------------
+    // Controller options
+    //-------------------------------------------------------------------------
+    if (TiXmlElement* ControllerRootElem = configRoot->FirstChildElement("ControllerOptions"))
+    {
+        ParseValueFromXmlElem(&m_ControllerOptions.vibration,
+                              ControllerRootElem->FirstChildElement("Vibration"));
+    }
+
+    //-------------------------------------------------------------------------
     // Debug options
     //-------------------------------------------------------------------------
     if (TiXmlElement* pDebugOptionsRootElem = configRoot->FirstChildElement("DebugOptions"))
@@ -681,12 +682,6 @@ bool BaseGameApp::LoadGameOptions(const char* inConfigFile)
             pDebugOptionsRootElem->FirstChildElement("LastImplementedLevel"));
         ParseValueFromXmlElem(&m_DebugOptions.skipMenuToLevel,
             pDebugOptionsRootElem->FirstChildElement("SkipMenuToLevel"));
-    }
-
-    if (TiXmlElement* joystickRootElem = configRoot->FirstChildElement("Joystick"))
-    {
-        ParseValueFromXmlElem(&m_GameOptions.joystickVibration,
-            joystickRootElem->FirstChildElement("Vibration"));
     }
 
     return true;
@@ -924,108 +919,115 @@ bool BaseGameApp::InitializeControllers(GameOptions& gameOptions)
         return false;
     }
 
-    SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, ">>>>> Initializing Joysticks...");
+    SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, ">>>>> Initializing Controllers...");
 
-    for (int i = 0; i < SDL_NumJoysticks(); i++)
+    int devices = SDL_NumJoysticks();
+    if (devices == 0)
     {
-        if ((m_Joystick = SDL_JoystickOpen(i)))
+        LOG("Controller: No devices found");
+    }
+    else {
+        for (int i = 0; i < devices; i++)
         {
-            m_JoystickDeviceIndex = i;
-            LOG("Joysticks: Name: " + std::string(SDL_JoystickNameForIndex(i)));
-            LOG("Joysticks: Number of Axes: " + ToStr(SDL_JoystickNumAxes(m_Joystick)));
-            LOG("Joysticks: Number of Buttons: " + ToStr(SDL_JoystickNumButtons(m_Joystick)));
-            LOG("Joysticks: Number of Balls: " + ToStr(SDL_JoystickNumBalls(m_Joystick)));
-            LOG("Joysticks: Number of Hats: " + ToStr(SDL_JoystickNumHats(m_Joystick)));
-            break;
-        } else {
-            LOG_ERROR("Joysticks: Unable to use joystick! Error: " + std::string(SDL_GetError()));
+            if (ControllerDeviceAttach(i))
+            {
+                break;
+            }
         }
-    }
 
-    if (SDL_NumJoysticks() < 1)
-    {
-        LOG("Joysticks: No Joysticks connected");
-    }
-    else
-    {
-        if (m_JoystickDeviceIndex < 0)
+        if (m_ControllerDeviceIndex >= 0)
         {
-            LOG_WARNING("Joysticks: Unable to connect to any of the found joysticks");
+            LOG("Controller: A device Successfully connected");
         }
         else
         {
-            LOG("Joysticks: Successfully connected to joystick");
-
-            if (m_GameOptions.joystickVibration &&
-                (m_JoystickHaptic = SDL_HapticOpenFromJoystick(m_Joystick)) != NULL &&
-                SDL_HapticRumbleInit(m_JoystickHaptic) == 0)
-            {
-                JoystickRumblePlay(0.15, 200);
-            }
-            else
-            {
-                LOG_ERROR("Joysticks: Unable to use Force Feedback! Error: " + std::string(SDL_GetError()));
-            }
+            LOG_WARNING("Controller: Unable to connect to any of the found devices");
         }
     }
 
-    LOG("Joysticks successfully initialized...");
+    LOG("Controllers successfully initialized...");
     return true;
 }
 
-void BaseGameApp::HandleJoystickDeviceEvent(Uint32 type, Sint32 which)
+void BaseGameApp::ControllerDeviceHandleEvent(Uint32 type, Sint32 which)
 {
     if (type == SDL_JOYDEVICEADDED)
     {
-        if (SDL_JoystickGetAttached(m_Joystick) == SDL_FALSE)
+        if (SDL_JoystickGetAttached(m_Controller) == SDL_FALSE)
         {
-            if ((m_Joystick = SDL_JoystickOpen(which)))
-            {
-                m_JoystickDeviceIndex = which;
-
-                if (m_GameOptions.joystickVibration && (
-                    (m_JoystickHaptic = SDL_HapticOpenFromJoystick(m_Joystick)) == NULL ||
-                    SDL_HapticRumbleInit(m_JoystickHaptic) != 0))
-                {
-                    LOG_ERROR("Joysticks: Unable to use Force Feedback! Error: " + std::string(SDL_GetError()));
-                }
-            }
-            else
-            {
-                m_JoystickDeviceIndex = -1;
-            }
+            ControllerDeviceDeAttach();
+            ControllerDeviceAttach(which);
         }
     }
     else if (type == SDL_JOYDEVICEREMOVED)
     {
-        if (m_JoystickHaptic != NULL) {
-            SDL_HapticClose(m_JoystickHaptic);
-            m_JoystickHaptic = NULL;
-        }
-
-        if (SDL_JoystickGetAttached(m_Joystick) == SDL_TRUE &&
-            m_JoystickDeviceIndex == which)
-        {
-            SDL_JoystickClose(m_Joystick);
-            m_JoystickDeviceIndex = -1;
-        }
+        ControllerDeviceDeAttach();
 
         for (int i = 0; i < SDL_NumJoysticks(); i++)
         {
-            if ((m_Joystick = SDL_JoystickOpen(i)))
+            if (ControllerDeviceAttach(i))
             {
-                m_JoystickDeviceIndex = i;
                 break;
             }
         }
     }
 }
-
-void BaseGameApp::JoystickRumblePlay(float strength, Uint32 length)
+void BaseGameApp::ControllerDeviceDeAttach()
 {
-    if (m_JoystickHaptic)
+    if (m_ControllerHaptic != NULL) {
+        SDL_HapticClose(m_ControllerHaptic);
+        m_ControllerHaptic = NULL;
+    }
+
+    if (SDL_JoystickGetAttached(m_Controller) == SDL_TRUE || m_ControllerDeviceIndex >= 0)
     {
-        SDL_HapticRumblePlay(m_JoystickHaptic, strength, length);
+        m_Controller = NULL;
+        SDL_JoystickClose(m_Controller);
+        m_ControllerDeviceIndex = -1;
+        LOG("Controller: A device successfully disconnected");
+    }
+}
+
+bool BaseGameApp::ControllerDeviceAttach(Uint32 deviceIndex)
+{
+    m_ControllerDeviceIndex = -1;
+
+    if ((m_Controller = SDL_JoystickOpen(deviceIndex)))
+    {
+        m_ControllerDeviceIndex = deviceIndex;
+        LOG("Controller: Attached " + std::string(SDL_JoystickNameForIndex(deviceIndex)) + " with "
+            + ToStr(SDL_JoystickNumAxes(m_Controller)) + " axes, "
+            + ToStr(SDL_JoystickNumButtons(m_Controller)) + " buttons, "
+            + ToStr(SDL_JoystickNumBalls(m_Controller)) + " balls, "
+            + ToStr(SDL_JoystickNumHats(m_Controller)) + " hats");
+
+        if (m_ControllerOptions.vibration)
+        {
+             m_ControllerHaptic = SDL_HapticOpenFromJoystick(m_Controller);
+            if (m_ControllerHaptic != NULL && SDL_HapticRumbleInit(m_ControllerHaptic) == 0)
+            {
+                ControllerRumblePlay(0.15, 200);
+            }
+            else
+            {
+                LOG("Controller: Unable to use Haptic Feedback! Error: " + std::string(SDL_GetError()));
+            }
+        }
+
+        return true;
+    }
+    else
+    {
+        LOG_ERROR("Controller: Unable to use device! Error: " + std::string(SDL_GetError()));
+        return false;
+    }
+}
+
+void BaseGameApp::ControllerRumblePlay(float strength, Uint32 length)
+{
+    if (m_ControllerHaptic)
+    {
+        SDL_HapticRumblePlay(m_ControllerHaptic, strength, length);
     }
 }
 

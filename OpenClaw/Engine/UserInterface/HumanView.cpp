@@ -194,7 +194,7 @@ bool HumanView::VOnEvent(SDL_Event& evt)
 
         case SDL_JOYHATMOTION:
         {
-            return m_pJoystickHandler->VOnJoystickHat(evt.jhat.value);
+            return m_pJoystickHandler->VOnControllerHat(evt.jhat.value);
         }
 
         case SDL_JOYBUTTONDOWN:
@@ -207,20 +207,20 @@ bool HumanView::VOnEvent(SDL_Event& evt)
                 return true;
             }
 
-            return m_pJoystickHandler->VOnJoystickButtonDown(evt.jbutton.button);
+            return m_pJoystickHandler->VOnControllerButtonDown(evt.jbutton.button);
         }
         case SDL_JOYBUTTONUP:
         {
-            return m_pJoystickHandler->VOnJoystickButtonUp(evt.jbutton.button);
+            return m_pJoystickHandler->VOnControllerButtonUp(evt.jbutton.button);
         }
         case SDL_JOYAXISMOTION:
         {
-            return m_pJoystickHandler->VOnJoystickAxisMotion(evt.jaxis.axis, evt.jaxis.value);
+            return m_pJoystickHandler->VOnControllerAxisMotion(evt.jaxis.axis, evt.jaxis.value);
         }
         case SDL_JOYDEVICEREMOVED:
         case SDL_JOYDEVICEADDED:
         {
-            g_pApp->HandleJoystickDeviceEvent(evt.jdevice.type, evt.jdevice.which);
+            g_pApp->ControllerDeviceHandleEvent(evt.jdevice.type, evt.jdevice.which);
             return false;
         }
         default:

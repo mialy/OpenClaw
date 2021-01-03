@@ -101,22 +101,22 @@ bool MovementController::VOnTouch(const Touch_Event &evt) {
     return false;
 }
 
-bool MovementController::VOnJoystickButtonDown(Uint8 button)
+bool MovementController::VOnControllerButtonDown(Uint8 button)
 {
     return false;
 }
 
-bool MovementController::VOnJoystickButtonUp(Uint8 button)
+bool MovementController::VOnControllerButtonUp(Uint8 button)
 {
     return false;
 }
 
-bool MovementController::VOnJoystickHat(Uint8 hat)
+bool MovementController::VOnControllerHat(Uint8 hat)
 {
     return false;
 }
 
-bool MovementController::VOnJoystickAxisMotion(Uint8 axis, Sint16 value)
+bool MovementController::VOnControllerAxisMotion(Uint8 axis, Sint16 value)
 {
     return false;
 }

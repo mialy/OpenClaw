@@ -74,6 +74,9 @@
       <TimeThreshold>100</TimeThreshold>
     </TouchScreen>
   </ControlOptions>
+  <ControllerOptions>
+    <Vibration>true</Vibration>
+  </ControllerOptions>
   <DebugOptions>
     <SkipMenu>true</SkipMenu>
     <SkipMenuToLevel>13</SkipMenuToLevel>

@@ -412,7 +412,7 @@ void ClawGameLogic::CheckpointReachedDelegate(IEventDataPtr pEventData)
             saveGamesDoc.SaveFile(savesFilePath.c_str());
         }
 
-        g_pApp->JoystickRumblePlay(0.20, 500);
+        g_pApp->ControllerRumblePlay(0.20, 500);
     }
 }
 

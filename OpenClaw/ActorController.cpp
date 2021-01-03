@@ -402,7 +402,7 @@ bool ActorController::OnPress(int id, const Touch_PressEvent &evt, bool start) {
 }
 
 
-bool ActorController::VOnJoystickButtonDown(Uint8 button)
+bool ActorController::VOnControllerButtonDown(Uint8 button)
 {
     // ToDo: Make those buttons configurable
     switch (button)
@@ -428,7 +428,7 @@ bool ActorController::VOnJoystickButtonDown(Uint8 button)
     return false;
 }
 
-bool ActorController::VOnJoystickButtonUp(Uint8 button)
+bool ActorController::VOnControllerButtonUp(Uint8 button)
 {
     m_ControllerKeys[button] = false;
 
@@ -441,13 +441,13 @@ bool ActorController::VOnJoystickButtonUp(Uint8 button)
     return false;
 }
 
-bool ActorController::VOnJoystickHat(Uint8 button)
+bool ActorController::VOnControllerHat(Uint8 button)
 {
     ControllerHatPos = button;
     return false;
 }
 
-bool ActorController::VOnJoystickAxisMotion(Uint8 axis, Sint16 value)
+bool ActorController::VOnControllerAxisMotion(Uint8 axis, Sint16 value)
 {
     m_ControllerAxis[axis] = value < -GetJoyAxisDeadzone() ? -1
         : value > GetJoyAxisDeadzone() ? 1

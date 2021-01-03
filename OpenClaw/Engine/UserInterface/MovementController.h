@@ -9,7 +9,7 @@ class MovementController : public IKeyboardHandler, public IPointerHandler, publ
 {
 public:
     MovementController(shared_ptr<SceneNode> controlledObject, float speed = 0.36f);
-    
+
     void SetControlledObject(shared_ptr<SceneNode> controlledObject) { m_pControlledObject = controlledObject; }
     void OnUpdate(uint32 msDiff);
 
@@ -24,10 +24,10 @@ public:
     std::vector<std::shared_ptr<AbstractRecognizer>> VRegisterRecognizers() override;
     bool VOnTouch(const Touch_Event &evt) override;
 
-    bool VOnJoystickButtonDown(Uint8 button);
-    bool VOnJoystickButtonUp(Uint8 button);
-    bool VOnJoystickHat(Uint8 hat);
-    bool VOnJoystickAxisMotion(Uint8 axis, Sint16 value);
+    bool VOnControllerButtonDown(Uint8 button);
+    bool VOnControllerButtonUp(Uint8 button);
+    bool VOnControllerHat(Uint8 hat);
+    bool VOnControllerAxisMotion(Uint8 axis, Sint16 value);
 
 private:
     shared_ptr<SceneNode> m_pControlledObject;

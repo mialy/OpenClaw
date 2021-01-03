@@ -1055,7 +1055,7 @@ void ClawControllableComponent::VOnHealthBelowZero(DamageType damageType, int so
         IEventMgr::Get()->VQueueEvent(IEventDataPtr(new EventData_Boss_Fight_Ended(false)));
     }
 
-    g_pApp->JoystickRumblePlay(0.30, 600);
+    g_pApp->ControllerRumblePlay(0.30, 600);
 }
 
 void ClawControllableComponent::VOnHealthChanged(int32 oldHealth, int32 newHealth, DamageType damageType, Point impactPoint, int sourceActorId)
